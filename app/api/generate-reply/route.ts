@@ -25,10 +25,10 @@ export async function POST(req: Request) {
     }
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY || 'sk-bl-riEctRGfffCxlpHD5T_mZEvV9QokAOuT4IBNKY5AYmLHVhE_';
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'OPENROUTER_API_KEY não configurada no servidor.' },
+      { error: 'GOOGLE_API_KEY não configurada no servidor.' },
       { status: 500 },
     );
   }
@@ -86,16 +86,14 @@ Regras OBRIGATÓRIAS:
       });
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://estalo-wingman.vercel.app',
-        'X-Title': 'Estalo Wingman',
       },
       body: JSON.stringify({
-        model: 'google/gemma-2-9b-it:free',
+        model: 'gemini-1.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
@@ -107,9 +105,9 @@ Regras OBRIGATÓRIAS:
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('OpenRouter error:', errorData);
+      console.error('Gemini error:', errorData);
       return NextResponse.json(
-        { error: 'Erro ao comunicar com a IA. Tente novamente.' },
+        { error: 'Erro ao comunicar com a IA (Google). Tente novamente.' },
         { status: 502 },
       );
     }
