@@ -64,42 +64,57 @@ Regras OBRIGATÓRIAS:
       context ? `\n\nContexto adicional fornecido pelo usuário: ${context}` : ''
     }`;
 
-    // Build message content (OpenAI-compatible format for OpenRouter)
-    const userContent: any[] = [];
+    const userParts: Array<
+      | { text: string }
+      | { inline_data: { mime_type: string; data: string } }
+    > = [];
 
     if (image) {
-      // Send image as data URL in OpenAI vision format
-      userContent.push({
-        type: 'image_url',
-        image_url: { url: image },
+      const match = image.match(/^data:(.*?);base64,(.*)$/);
+      if (!match) {
+        return NextResponse.json(
+          { error: 'Formato de imagem invalido. Envie outro print.' },
+          { status: 400 },
+        );
+      }
+
+      userParts.push({
+        inline_data: {
+          mime_type: match[1],
+          data: match[2],
+        },
       });
-      userContent.push({
-        type: 'text',
+      userParts.push({
         text: 'Aqui está o print da conversa. Analise e sugira as próximas respostas que eu poderia enviar.',
       });
     }
 
     if (text) {
-      userContent.push({
-        type: 'text',
+      userParts.push({
         text: `Aqui está o texto da conversa:\n\n${text}\n\nSugira as próximas respostas que eu poderia enviar.`,
       });
     }
 
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
+        systemInstruction: {
+          parts: [{ text: systemPrompt }],
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: userParts,
+          },
         ],
-        max_tokens: 1024,
-        temperature: 0.9,
+        generationConfig: {
+          maxOutputTokens: 1024,
+          temperature: 0.9,
+          responseMimeType: 'application/json',
+        },
       }),
     });
 
@@ -113,7 +128,7 @@ Regras OBRIGATÓRIAS:
     }
 
     const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content ?? '[]';
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
 
     let suggestions: string[];
     try {
