@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY || 'sk-bl-riEctRGfffCxlpHD5T_mZEvV9QokAOuT4IBNKY5AYmLHVhE_';
   if (!apiKey) {
     return NextResponse.json(
       { error: 'OPENROUTER_API_KEY não configurada no servidor.' },
