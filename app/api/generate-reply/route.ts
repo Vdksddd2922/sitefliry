@@ -65,7 +65,6 @@ Regras OBRIGATÓRIAS:
     }`;
 
     // Build message content (OpenAI-compatible format for OpenRouter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userContent: any[] = [];
 
     if (image) {
