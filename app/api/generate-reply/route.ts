@@ -95,7 +95,7 @@ Regras OBRIGATÓRIAS:
         'X-Title': 'Estalo Wingman',
       },
       body: JSON.stringify({
-        model: 'google/gemma-4-31b-it:free',
+        model: 'google/gemma-2-9b-it:free',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userContent },
